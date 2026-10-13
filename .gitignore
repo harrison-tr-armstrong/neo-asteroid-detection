@@ -1,0 +1,26 @@
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Virtual environment
+.venv/
+venv/
+
+# Dataset
+NEOBench/
+data/
+datasets/
+
+# Model weights and training outputs
+*.pt
+*.pth
+runs/
+
+# Secrets
+.env
+.env.*
+
+# Temporary files
+*.log
