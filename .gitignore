@@ -2,25 +2,38 @@
 # Python
 __pycache__/
 *.py[cod]
-.ipynb_checkpoints/
+*.pyd
 
-# Virtual environment
+# Virtual environments
 .venv/
 venv/
+env/
 
-# Dataset
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local datasets
 NEOBench/
 data/
 datasets/
 
-# Model weights and training outputs
+# Model checkpoints and training outputs
+runs/
+weights/
 *.pt
 *.pth
-runs/
+*.onnx
 
-# Secrets
-.env
-.env.*
-
-# Temporary files
+# Logs and temporary files
 *.log
+temp/
+tmp/
+
+# Operating system files
+.DS_Store
+Thumbs.db
