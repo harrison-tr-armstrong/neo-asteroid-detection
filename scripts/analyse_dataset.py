@@ -29,3 +29,6 @@ for child in datasets_root.iterdir():
                total_images = len(train_images) + len(validation_images) + len(test_images)
                print(f"Train images: {len(train_images)}\nValidation images: {len(validation_images)}\nTest images: {len(test_images)}")
                print(f"Total images: {total_images}")
+
+
+#Counting the number of classes in the dataset
