@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 from matplotlib.patches import Rectangle

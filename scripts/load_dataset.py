@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from dataset_loader import NEODatasetLoader
 
@@ -12,14 +11,14 @@ dataset_directory = (
     / "datasets"
     / "HubbleAsteroidHunter_YOLO"
 )
-#choose what split to load: "train", "validation", or "test"
+
+# Select the dataset split: train, validation, or test.
 loader = NEODatasetLoader(dataset_directory, split="train")
 
 print(f"Total images: {len(loader)}")
 
-sample = loader.get_sample(126) #get a sample from the dataset by index
+sample = loader.get_sample(126)
 
-#print information about the sample
 print(f"Image: {sample['image_path'].name}")
 print(f"Label exists: {sample['label_exists']}")
 print(f"Valid annotations: {len(sample['annotations'])}")
