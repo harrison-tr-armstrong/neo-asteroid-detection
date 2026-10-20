@@ -1,116 +1,274 @@
+
 from pathlib import Path
+import math
 
-#Resolve the project root and locate the NEOBench dataset dir
-p = Path(__file__).resolve().parent.parent
+# Resolve the project root and locate the NEOBench datasets.
+project_root = Path(__file__).resolve().parent.parent
 
-#Path to the dir containing all five YOLO datasets
 datasets_root = (
-    p
+    project_root
     / "NEOBench"
     / "NEOBench_data"
     / "datasets"
 )
 
+# Supported file extensions.
+image_extensions = {".jpg", ".jpeg", ".png"}
+label_extensions = {".txt"}
+splits = ("train", "validation", "test")
+
 
 ###############################################
-# Count image samples across each dataset split
+# Validate that the dataset directory exists.
 
-#Supported image file extensions
-image_extensions = [".jpg", ".jpeg", ".png"]
+if not datasets_root.is_dir():
+    raise FileNotFoundError(
+        f"Dataset directory not found: {datasets_root}"
+    )
 
-#iterate through each dataset dir
-for child in datasets_root.iterdir():
-   if child.is_dir():
-      print(f"Dataset: {child.name}")
-
-      #Check that the dataset contains all three splits
-      if (child / "train").is_dir() and (child / "validation").is_dir() and (child / "test").is_dir():
-
-         #Check that each split has an image dir
-         if (child / "train" / "images").is_dir() and (child / "validation" / "images").is_dir() and (child / "test" / "images").is_dir():
-
-            #Collect image files from each split, including nested dir
-            train_images = [
-               file for file in (child / "train" / "images").rglob("*")
-                  if file.is_file() and file.suffix.lower() in image_extensions
-               ]
-            validation_images = [
-               file for file in (child / "validation" / "images").rglob("*")
-                  if file.is_file() and file.suffix.lower() in image_extensions
-               ]
-            test_images = [
-               file for file in (child / "test" / "images").rglob("*")
-                  if file.is_file() and file.suffix.lower() in image_extensions
-               ]
-
-            #Calculate and display the image totals for each split and the full dataset
-            total_images = len(train_images) + len(validation_images) + len(test_images)
-            print(f"Train images: {len(train_images)}\nValidation images: {len(validation_images)}\nTest images: {len(test_images)}")
-            print(f"Total images: {total_images}")
+print(f"Dataset root: {datasets_root}")
 
 
-################################################
-# Count distinct class IDs from YOLO annotations
+###############################################
+# Analyse each dataset.
 
-#Supported YOLO label file extension
-label_extensions = [".txt"]
+for child in sorted(datasets_root.iterdir()):
+    if not child.is_dir():
+        continue
 
-for child in datasets_root.iterdir():
-   if child.is_dir():
-      print(f"Dataset: {child.name}")
+    print("\n" + "=" * 60)
+    print(f"Dataset: {child.name}")
+    print("=" * 60)
 
-      if (child/ "train").is_dir() and (child / "validation").is_dir() and (child / "test").is_dir():
+    dataset_image_total = 0
+    dataset_class_ids = set()
 
-         #Store unique class IDs found across all three splits
-         class_ids = set()
+    # Process training, validation and test independently.
+    for split in splits:
+        images_dir = child / split / "images"
+        labels_dir = child / split / "labels"
 
-         if (child / "train" / "labels").is_dir() and (child / "validation" / "labels").is_dir() and (child / "test" / "labels").is_dir():
+        print(f"\n--- {split.upper()} ---")
 
-            #Find all label files in the training split
-            train_labels = [
-               file for file in (child / "train" / "labels").rglob("*")
-                  if file.is_file() and file.suffix.lower() in label_extensions
+        if not images_dir.is_dir():
+            print(f"Images directory not found: {images_dir}")
+            continue
+
+        # Collect all images, including nested directories.
+        images = [
+            file
+            for file in images_dir.rglob("*")
+            if file.is_file()
+            and file.suffix.lower() in image_extensions
+        ]
+
+        total_images = len(images)
+        dataset_image_total += total_images
+
+        print(f"Image directory: {images_dir}")
+        print(f"Total images: {total_images}")
+
+        # Collect all YOLO annotation files if the directory exists.
+        if labels_dir.is_dir():
+            labels = [
+                file
+                for file in labels_dir.rglob("*")
+                if file.is_file()
+                and file.suffix.lower() in label_extensions
             ]
-            #Read each annotation file and extract its class IDs
-            for file in train_labels:
-               with open(file, "r") as f:
-                  for line in f:
-                     #Split the annotation line into its YOLO values
-                     value = line.split()
+        else:
+            labels = []
+            print("Labels directory not found.")
 
-                     #Skip blank or whitespace lines
-                     if not value:
+        # Map annotation filenames to their relative paths.
+        # This supports matching files in nested folders.
+        label_lookup = {
+            file.relative_to(labels_dir)
+            .with_suffix("")
+            .as_posix(): file
+            for file in labels
+        } if labels_dir.is_dir() else {}
+
+        # Counters for this split.
+        positive_count = 0
+        negative_count = 0
+        missing_label_count = 0
+        invalid_label_count = 0
+
+        # Inspect each image and its corresponding label.
+        for image_path in images:
+            relative_image = image_path.relative_to(images_dir)
+
+            label_key = (
+                relative_image
+                .with_suffix("")
+                .as_posix()
+            )
+
+            label_path = label_lookup.get(label_key)
+
+            # UAEMMN negative images are identified by their filenames.
+            # They do not need annotation files to count as negatives.
+            if (
+                child.name == "UAEMMN_YOLO"
+                and image_path.stem.startswith("uaemmn_neg_")
+            ):
+                negative_count += 1
+
+                # Flag an unexpected annotation on a negative image.
+                if label_path is not None:
+                    with open(
+                        label_path,
+                        "r",
+                        encoding="utf-8"
+                    ) as label_file:
+                        has_annotations = any(
+                            line.strip()
+                            for line in label_file
+                        )
+
+                    if has_annotations:
+                        print(
+                            "WARNING: UAEMMN negative image has "
+                            f"non-empty labels: {image_path.name}"
+                        )
+
+                continue
+
+            # Images without matching labels need investigation.
+            if label_path is None:
+                missing_label_count += 1
+                continue
+
+            # Read non-empty annotation lines.
+            with open(
+                label_path,
+                "r",
+                encoding="utf-8"
+            ) as label_file:
+                lines = [
+                    line.strip()
+                    for line in label_file
+                    if line.strip()
+                ]
+
+            # An existing empty label file is a negative example.
+            if not lines:
+                negative_count += 1
+                continue
+
+            # Validate each YOLO bounding-box annotation.
+            valid_label = True
+
+            for line in lines:
+                parts = line.split()
+
+                # Standard YOLO detection format:
+                # class_id x_center y_center width height
+                if len(parts) != 5:
+                    valid_label = False
+                    break
+
+                try:
+                    class_id = int(parts[0])
+
+                    x_center, y_center, width, height = map(
+                        float,
+                        parts[1:]
+                    )
+
+                except ValueError:
+                    valid_label = False
+                    break
+
+                coordinates = (
+                    x_center,
+                    y_center,
+                    width,
+                    height
+                )
+
+                if (
+                    class_id < 0
+                    or not all(
+                        math.isfinite(value)
+                        for value in coordinates
+                    )
+                    or not all(
+                        0 <= value <= 1
+                        for value in coordinates
+                    )
+                    or width <= 0
+                    or height <= 0
+                ):
+                    valid_label = False
+                    break
+
+            if valid_label:
+                positive_count += 1
+            else:
+                invalid_label_count += 1
+
+        # Count distinct class IDs across this split's labels.
+        split_class_ids = set()
+
+        for label_path in labels:
+            with open(
+                label_path,
+                "r",
+                encoding="utf-8"
+            ) as label_file:
+                for line in label_file:
+                    values = line.split()
+
+                    if not values:
                         continue
 
-                     #Add the class ID to the set, avoiding duplicates
-                     class_ids.add(int(value[0]))
-
-            validation_labels = [
-               file for file in (child / "validation" / "labels").rglob("*")
-                  if file.is_file() and file.suffix.lower() in label_extensions
-            ]
-            for file in validation_labels:
-               with open(file, "r") as f:
-                  for line in f:
-                     value = line.split()
-                     if not value:
+                    try:
+                        class_id = int(values[0])
+                    except ValueError:
                         continue
 
-                     class_ids.add(int(value[0]))
+                    if class_id >= 0:
+                        split_class_ids.add(class_id)
 
-            test_labels = [
-               file for file in (child / "test" / "labels").rglob("*")
-                  if file.is_file() and file.suffix.lower() in label_extensions
-            ]
-            for file in test_labels:
-               with open(file, "r") as f:
-                  for line in f:
-                     value = line.split()
-                     if not value:
-                        continue
+        dataset_class_ids.update(split_class_ids)
 
-                     class_ids.add(int(value[0]))
+        # Display split results.
+        accounted_images = (
+            positive_count
+            + negative_count
+            + missing_label_count
+            + invalid_label_count
+        )
 
-            #Display the distinct classes found across all three splits
-            print(f"Distinct classes across all splits: {len(class_ids)}")
-            print(f"Total classes: {sorted(class_ids)}")
+        print(f"Label files found: {len(labels)}")
+        print(f"Distinct class IDs: {sorted(split_class_ids)}")
+        print(f"Positive images: {positive_count}")
+        print(f"Negative images: {negative_count}")
+        print(f"Missing label files: {missing_label_count}")
+        print(f"Invalid label files: {invalid_label_count}")
+        print(
+            f"Accounted for: "
+            f"{accounted_images}/{total_images} images"
+        )
+
+        if accounted_images != total_images:
+            print("WARNING: Image counts do not match!")
+
+    # Display dataset-wide summary.
+    print(f"\n--- {child.name} SUMMARY ---")
+    print(
+        "Total images across available splits: "
+        f"{dataset_image_total}"
+    )
+    print(
+        "Distinct class IDs across all splits: "
+        f"{len(dataset_class_ids)}"
+    )
+    print(f"Class IDs: {sorted(dataset_class_ids)}")
+
+
+print("\n" + "=" * 60)
+print("DATASET ANALYSIS COMPLETE")
+print("=" * 60)
