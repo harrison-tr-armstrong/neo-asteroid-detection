@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import cv2

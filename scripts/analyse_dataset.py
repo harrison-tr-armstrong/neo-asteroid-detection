@@ -1,6 +1,7 @@
-
 from pathlib import Path
 import math
+import cv2
+
 
 # Resolve the project root and locate the NEOBench datasets.
 project_root = Path(__file__).resolve().parent.parent
@@ -67,6 +68,7 @@ for child in sorted(datasets_root.iterdir()):
 
         print(f"Image directory: {images_dir}")
         print(f"Total images: {total_images}")
+
 
         # Collect all YOLO annotation files if the directory exists.
         if labels_dir.is_dir():
@@ -242,6 +244,8 @@ for child in sorted(datasets_root.iterdir()):
             + invalid_label_count
         )
 
+
+
         print(f"Label files found: {len(labels)}")
         print(f"Distinct class IDs: {sorted(split_class_ids)}")
         print(f"Positive images: {positive_count}")
@@ -268,7 +272,66 @@ for child in sorted(datasets_root.iterdir()):
     )
     print(f"Class IDs: {sorted(dataset_class_ids)}")
 
-
 print("\n" + "=" * 60)
 print("DATASET ANALYSIS COMPLETE")
 print("=" * 60)
+
+###############################################
+# Examine image dimensions
+
+for child in sorted(datasets_root.iterdir()):
+    # Skip anything inside the datasets directory that isn't a folder
+    if not child.is_dir():
+        continue
+
+    # Examine each available split within the current dataset
+    for split in splits:
+        images_dir = child / split / "images"
+
+        # Skip this split if its images directory doesn't exist
+        if not images_dir.is_dir():
+            continue
+
+        # Find all image files within the current split
+        images = [
+            file
+            for file in images_dir.rglob("*")
+            if file.is_file()
+            and file.suffix.lower() in image_extensions
+        ]
+
+        # Reset counters for the current dataset split
+        dimension_counts = {}
+        unreadable_images = 0
+
+        # Read each image and count its dimensions
+        for image_path in images:
+            image = cv2.imread(str(image_path))
+
+            # Count images that OpenCV cannot read
+            if image is None:
+                unreadable_images += 1
+                continue
+
+            # Get the image height and width in pixels
+            height, width = image.shape[:2]
+
+            # Store the dimensions as a tuple (width, height)
+            dimensions = (width, height)
+
+            # Increase the count for these dimensions
+            dimension_counts[dimensions] = (
+                dimension_counts.get(dimensions, 0) + 1
+            )
+
+        # Display the dimension analysis for this split
+        print(f"\nDataset: {child.name} | Split: {split}")
+        print("-" * 40)
+        print(f"Total images checked: {len(images)}")
+        print(f"Unreadable images: {unreadable_images}")
+        print(f"Unique dimensions: {len(dimension_counts)}")
+
+        # Display each unique resolution and how many images use it
+        for dimensions, count in sorted(dimension_counts.items()):
+            width, height = dimensions
+            print(f"{width}x{height}: {count} images")
