@@ -1,0 +1,104 @@
+Official NEO dataset: https://huggingface.co/datasets/jiayou-he/NEOBench?utm_source=chatgpt.com
+Dataset name: NEO-Bench
+Dataset creator: Jiayou He - https://huggingface.co/jiayou-he
+License:
+	- Roboflow: OK - https://universe.roboflow.com/peek/asteroid-sbmc0 - License: CC BY 4.0
+	- Hubble Asteroid Hunter: OK https://www.zooniverse.org/projects/sandorkruk/hubble-asteroid-hunter - License: CC BY 4.0
+	- StreakMind: OK https://www.researchgate.net/publication/401934026_StreakMind_AI_detection_and_analysis_of_satellite_streaks_in_astronomical_images_with_automated_database_integration - License: CC BY 4.0
+	- StreaksYoloDataset: OK https://github.com/oparisot/StreaksYoloDataset?utm_source=chatgpt.com - License: CC BY 4.0
+	- UAEMMN 10%: OK  https://arxiv.org/html/2609.06774v1 - License: CC BY 4.0
+Dataset version: c5df4b3
+Dataset size: 3.51GB or 8376 images total
+Classes: 1 class and it’s (streak)
+Image format: .jpg
+Image dimensions: Variable / dataset dependent
+Annotation format: YOLO
+Bounding boxes: YOLO format - normalised x_center, y_center, width, height
+Segmentation masks: NONE
+Labels: Object-level
+
+------------------------------------------------------------
+Accuracy Potential - YOLO26 Model Selection
+
+The official YOLO26 benchmarks show that larger model variants generally achieve higher COCO mAP scores, with YOLO26n scoring 40.9, YOLO26s scoring 48.6, and YOLO26 scoring 53.1 at 640-pixel input resolution.
+
+These figures provide a baseline for comparison but do not directly predict performance on astronomical streak detection. Fine-tuning pretrained weights on the NEOBench dataset may improve task-specific performance.
+
+YOLO26s is the preferred initial candidate because it offers a balance between benchmark accuracy and computational requirements. YOLO26n remains a lighter alternative, while YOLO26m can be considered if validation results suggest that greater model capacity is needed and can be ran.
+
+The final decision should be based on measured precision, recall, mAP50-95, inference speed, and GPU memory usage after training and validation on the project's datasets.
+
+------------------------------------------------------------
+Speed Potential
+
+The published YOLO26 benchmarks indicate that smaller model variants generally provide faster inference. YOLO26n records 38.9 ms per image using CPU ONNX and 1.7 ms using NVIDIA T4 TensorRT, compared with 87.2 ms and 2.5 ms respectively for YOLO26s.
+
+These figures suggest that YOLO26n has a speed advantage, while YOLO26s offers a potential compromise between inference speed and accuracy. However, the published timings use different hardware and inference configurations from my current setup.
+
+Actual inference speed will be measured on my RTX 3050 during model evaluation. Input resolution, batch size and inference framework will be considered when comparing performance.
+
+------------------------------------------------------------
+GPU Potential
+
+My system uses an NVIDIA RTX 3050 with 8gb VRAM, 16gb RAM and CUDE-enabled PyTorch. I have already confirmed that YOLO26s can perform inference on the GPU.
+
+YOLO26n and YOLO26s are the most practical initial candidate because they offer lower computational requirements than the medium and larger variants. YOLO26s is my preferred starting point because it offers a balance between accuracy potential and resource usage.
+
+Training memory requirements will depend on model size, batch size and input resolution. I will begin with a 640-pixel image size and use an appropriate batch size for the available VRAM, reducing it if necessary. Actual GPU memory consumption and training performance will be measured during the training phase rather than assumed from published benchmarks.
+
+The current hardware should provide a seasonable starting point for fine-tuning a smaller YOLO26 model locally, without requiring cloud GPU resources immediately.
+
+------------------------------------------------------------
+Ease of Training
+
+YOLO26 is relatively straightforward to train using the Ultralytics Python API. The framework supports pretrained weights, custom object-detection datasets, configurable training parameters and built-in validation.
+
+I can start from pretrained YOLO26s weights and fine-tune the model on my NEOBench dataset rather than training a model from scratch. This reduces the amount of work required to establish a baseline.
+
+The training process requires a dataset configuration file specifying the dataset paths and class names, along with suitable training parameters such as epochs, batch size and image resolution.
+
+Ultralytics provides a consistent interface for training, validation and inference, which should make the workflow manageable for my first computer-vision project. My existing Python, PyTorch, CUDA and Ultralytics environment is already configured, reducing setup requirements.
+
+YOLO26s is a suitable candidate because pretrained weights and the existing Ultralytics workflow simplify training. Actual training time and memory usage will be assessed during implementation.
+
+------------------------------------------------------------
+Ease of Integration
+
+YOLO26 integrates with Python through the Ultralytics API, allowing the same model interface to load weights, perform inference, train models and validate predictions.
+
+For my project, this provides a straightforward route towards an application where users upload astronomical images and receive detected streaks with bounding-box coordinates and confidence scores.
+
+The planned architecture uses FastAPI for the backend and React with TypeScript for the frontend. The backend can load the trained YOLO model, process uploaded images and return structured detection results to the frontend.
+
+Ultralytics also supports exporting models to formats such as ONNX and TensorRT, providing potential optimisation options if deployment performance becomes a concern.
+
+YOLO26s should be straightforward to integrate because it already works in my Python environment and provides an established inference API. The future FastAPI and React integration will still require implementation and testing; it has not yet been completed.
+
+------------------------------------------------------------
+Documentation
+
+YOLO26 has official documentation covering model architecture, pretrained weights, training, validation, prediction, export and deployment. The documentation includes Python and command-line examples, parameter explanations and guidance for fine-tuning models on custom datasets.
+
+This provides a clear reference for implementing the model, troubleshooting training problems and understanding the available configuration options.
+
+The documentation also explains YOLO26-specific features, including its end-to-end inference options and improvements intended to support efficient deployment.
+
+Documentation quality is a strength of YOLO26. The official guides provide practical examples that can support development and debugging throughout the project. I can use these resources alongside the source code and community support when investigating issues.
+
+------------------------------------------------------------
+Model Selection Decision
+
+Based on the research into accuracy potential, inference speed, GPU requirements, ease of training, integration and documentation, YOLO26s is my preferred initial model for the NEO Streak Detection System.
+
+It offers a stronger published COCO benchmark score than YOLO26n while remaining a practical candidate for my RTX 3050 with 8 GB VRAM. Pretrained weights and the Ultralytics API also provide a straightforward starting point for fine-tuning and future application integration.
+
+YOLO26n remains a potential alternative if resource usage or inference speed becomes a limiting factor. The final model choice will be informed by training results and validation metrics on the NEOBench dataset rather than published benchmarks alone. With YOLO26m being an option if there is room for more accuracy potential, inference speed.
+
+
+
+------------------------------------------------------------
+resources:
+https://docs.ultralytics.com/models/yolo26
+https://docs.ultralytics.com/modes/train
+https://docs.ultralytics.com/usage/python
+https://docs.ultralytics.com/modes/export
