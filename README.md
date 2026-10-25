@@ -77,7 +77,7 @@ The project is organised into phases covering research, dataset preparation, mod
 
 ### Phase 3 — Model Research and Baseline
 
-- [ ] Research candidate models - In Progress.
+- [x] Research candidate models.
 - [ ] Define the baseline strategy.
 - [ ] Implement the baseline.
 - [ ] Evaluate baseline performance.
