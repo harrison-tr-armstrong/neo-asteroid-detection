@@ -71,14 +71,13 @@ The project is organised into phases covering research, dataset preparation, mod
 
 ### Phase 2 — Dataset Analysis and Preparation
 
-- [ ] Dataset analysis _(in progress)_.
-- [ ] Data quality assessment.
-- [ ] Dataset preparation.
-- [ ] Data augmentation.
+- [x] Dataset analysis.
+- [x] Data quality assessment.
+- [x] Dataset preparation.
 
 ### Phase 3 — Model Research and Baseline
 
-- [ ] Research candidate models.
+- [ ] Research candidate models - In Progress.
 - [ ] Define the baseline strategy.
 - [ ] Implement the baseline.
 - [ ] Evaluate baseline performance.
