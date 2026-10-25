@@ -98,6 +98,7 @@ YOLO26n remains a potential alternative if resource usage or inference speed bec
 
 ------------------------------------------------------------
 resources:
+
 https://docs.ultralytics.com/models/yolo26
 https://docs.ultralytics.com/modes/train
 https://docs.ultralytics.com/usage/python
