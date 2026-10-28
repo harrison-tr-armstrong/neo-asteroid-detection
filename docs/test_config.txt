@@ -1,0 +1,38 @@
+Pretrained model: yolo11s.pt
+Dataset: Hubble Asteroid Hunter
+Classes: 1 - streak
+Image size: 640 x 640
+Batch size: 8
+Max epochs: 50
+Early stopping: Patience 10
+Initial learning rate: 0.01
+Final learning rate factor: 0.01
+Optimizer: auto
+Weight decay: 0.0005
+Warmup: 3 epochs
+Mosaic augmentation: 1.0
+Horizontal flip: 0.5
+HSV augmentation: 0.015 / 0.7 / 0.4
+Translation: 0.1
+Scale: 0.5
+Rotation: 0
+Mixup: 0
+Validation: Enabled
+Hardware: RTX 3050, 8gb VRAM
+
+
+My configuration uses several forms of augmentation. Which create variations of training images to help the model learn patterns that aren't tied to one image appearance.
+
+Enabled in my config:
+- Mosaic - extra detail: close_mosaic was set to 10 which allowed the augmentation to not run and be switched off during the final 10 training epochs, this helps the model finish on images closer to their normal appearance.
+- Horizontal flipping
+- Hue, saturation and brightness adjustments
+- Translation and scaling
+- RandAugment, as the configured auto augmentation policy
+
+disabled in config:
+- Rotation
+- Shear and perspective
+- Vertical flipping
+- Mixup and CutMix
+- copy & paste augmentation
