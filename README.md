@@ -78,19 +78,19 @@ The project is organised into phases covering research, dataset preparation, mod
 ### Phase 3 — Model Research and Baseline
 
 - [x] Research candidate models.
-- [ ] Define the baseline strategy.
-- [ ] Implement the baseline.
-- [ ] Evaluate baseline performance.
+- [x] Define the baseline strategy.
+- [x] Implement the baseline.
+- [x] Evaluate baseline performance.
 
 ### Phase 4 — Model Training and Evaluation
 
-- [ ] Training and fine-tuning.
-- [ ] First training run.
-- [ ] Training analysis.
-- [ ] Model experiments.
-- [ ] Final test set evaluation.
-- [ ] Error analysis.
-- [ ] Final model selection.
+- [x] Training and fine-tuning.
+- [x] First training run.
+- [x] Training analysis.
+- [x] Model experiments.
+- [ ] Final test set evaluation. (in progress)
+- [ ] Error analysis. (in progress)
+- [ ] Final model selection. (in progress)
 
 ### Phase 5 — Inference Pipeline
 
