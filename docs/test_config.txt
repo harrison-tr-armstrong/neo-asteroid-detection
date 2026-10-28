@@ -38,3 +38,27 @@ disabled in config:
 - copy & paste augmentation
 
 
+### Final Test Evaluation — YOLO11s
+
+Checkpoint: `runs/detect/train-3/weights/best.pt`
+
+Dataset: Hubble Asteroid Hunter YOLO
+Split: Test
+Images evaluated: 170
+Labelled instances: 170
+
+| Metric | Test result |
+|---|---:|
+| Precision | 0.933 |
+| Recall | 0.825 |
+| mAP50 | 0.915 |
+| mAP50–95 | 0.657 |
+| Preprocessing time | 2.3 ms/image |
+| Inference time | 9.9 ms/image |
+| Postprocessing time | 0.8 ms/image |
+
+Findings: YOLO11s achieved strong detection performance on the held-out test set. All four principal detection metrics were lower than the validation results, with the largest reduction observed in recall. This indicates that the model missed a greater proportion of labelled streaks on the test split. The results support YOLO11s as a strong baseline candidate, while further investigation of missed detections and generalisation remains worthwhile.
+
+Evaluation configuration: Image size 640, batch size 8, GPU device 0. Metrics were obtained using the standard Ultralytics validation configuration. The inference IoU setting was not explicitly overridden for this evaluation.
+
+Checkpoint status: The trained checkpoint was evaluated without further training or tuning against the test set.
