@@ -88,9 +88,9 @@ The project is organised into phases covering research, dataset preparation, mod
 - [x] First training run.
 - [x] Training analysis.
 - [x] Model experiments.
-- [ ] Final test set evaluation. (in progress)
-- [ ] Error analysis. (in progress)
-- [ ] Final model selection. (in progress)
+- [x] Final test set evaluation.
+- [x] Error analysis.
+- [ ] Final model selection. (Under Selection)
 
 ### Phase 5 — Inference Pipeline
 
