@@ -56,7 +56,7 @@ class NEOInference:
       if not 0 <= iou <= 1:
          raise ValueError("IoU must be between 0 and 1.")
 
-      if not isinstance(imgsz, int):
+      if isinstance(imgsz, bool) or not isinstance(imgsz, int):
          raise TypeError("Image size must be an integer.")
 
       if imgsz <= 0:
@@ -91,7 +91,7 @@ class NEOInference:
 
       output_path = None
 
-      if self.save_prediction:
+      if save_annotated:
          annotated_image = self.annotate(results[0])
          output_path = self.save_prediction(annotated_image, image_path, output_dir)
 
@@ -99,6 +99,52 @@ class NEOInference:
          "detections": detections,
          "annotated_image": str(output_path) if output_path else None
       }
+
+   def predict_batch(
+         self,
+         image_paths: list[str | Path],
+         conf: float = 0.10,
+         iou: float = 0.40,
+         imgsz: int = 640,
+         save_annotated: bool = True,
+         output_dir: str | Path = "runs/inference"
+   ) -> list[dict]:
+
+      if not isinstance(image_paths, list):
+         raise TypeError("Image paths must be provided as a list.")
+
+      if not image_paths:
+         raise ValueError("At least one image path must be provided.")
+
+      results = []
+
+      for image_path in image_paths:
+         try:
+            if not isinstance(image_path, (str, Path)):
+               raise TypeError("Each image path must be a string or Path object.")
+
+            result = self.predict(
+               image_path,
+               conf=conf,
+               iou=iou,
+               imgsz=imgsz,
+               save_annotated=save_annotated,
+               output_dir=output_dir
+            )
+
+            result["image"] = str(image_path)
+            result["status"] = "success"
+
+            results.append(result)
+
+         except (FileNotFoundError, ValueError, TypeError) as error:
+            results.append({
+               "image": str(image_path),
+               "status": "error",
+               "error": str(error)
+            })
+
+      return results
 
    def annotate(self, result: Results) -> np.ndarray:
       annotated_image = result.plot()
