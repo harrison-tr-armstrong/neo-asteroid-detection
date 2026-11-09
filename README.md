@@ -94,12 +94,12 @@ The project is organised into phases covering research, dataset preparation, mod
 
 ### Phase 5 — Inference Pipeline
 
-- [ ] Build reusable inference.
-- [ ] Define the detection result format.
+- [x] Build reusable inference.
+- [x] Define the detection result format.
 
 ### Phase 6 — Backend and Data Storage
 
-- [ ] Establish the backend foundation.
+- [ ] Establish the backend foundation.(in progress)
 - [ ] Implement image upload.
 - [ ] Build the prediction API.
 - [ ] Design the database.
