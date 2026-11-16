@@ -99,8 +99,8 @@ The project is organised into phases covering research, dataset preparation, mod
 
 ### Phase 6 — Backend and Data Storage
 
-- [ ] Establish the backend foundation.(in progress)
-- [ ] Implement image upload.
+- [x] Establish the backend foundation.
+- [ ] Implement image upload.(in progress)
 - [ ] Build the prediction API.
 - [ ] Design the database.
 - [ ] Store detection results.
