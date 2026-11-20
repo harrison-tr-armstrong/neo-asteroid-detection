@@ -1,10 +1,23 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from schemas import PredictionResponse, BoundingBox, DetectionResponse
+from api.schemas import PredictionResponse, BoundingBox, DetectionResponse
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import os
+import tempfile
+from contextlib import asynccontextmanager
+from src.inference import NEOInference
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+   print("Loading NEO model...")
+
+   app.state.detector = NEOInference
+
+   print("NEO model loaded")
+
+   yield
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
@@ -16,7 +29,7 @@ async def health():
    return {"status": "healthy"}
 
 
-@app.get("/prediction/example", response_model=PredictionResponse)
+@app.get("/predictions/example", response_model=PredictionResponse)
 async def prediction():
    return PredictionResponse(
       prediction_id=1,
@@ -59,8 +72,17 @@ async def create_prediction(file: UploadFile = File(...)):
    except UnidentifiedImageError:
       raise HTTPException(status_code=400, detail="Invalid image file")
 
+   tf = tempfile.NamedTemporaryFile(suffix=extension, delete=False)
+   tf.write(contents)
+   tf.close()
+   temp_file = tf.name
+
+   result = app.state.detector.predict(temp_file)
+
    return {
       "filename": file.filename,
       "file_size": len(contents),
       "content_type": file.content_type
    }
+
+
