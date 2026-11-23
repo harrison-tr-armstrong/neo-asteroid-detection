@@ -11,7 +11,7 @@ from src.inference import NEOInference
 async def lifespan(app: FastAPI):
    print("Loading NEO model...")
 
-   app.state.detector = NEOInference
+   app.state.detector = NEOInference()
 
    print("NEO model loaded")
 
@@ -50,7 +50,7 @@ async def prediction():
    )
 
 
-@app.post("/predictions")
+@app.post("/predictions", response_model=PredictionResponse)
 async def create_prediction(file: UploadFile = File(...)):
    allowed_extensions = [".jpg", ".jpeg", ".png"]
 
@@ -77,12 +77,36 @@ async def create_prediction(file: UploadFile = File(...)):
    tf.close()
    temp_file = tf.name
 
-   result = app.state.detector.predict(temp_file)
+   try:
+      result = app.state.detector.predict(temp_file)
 
-   return {
-      "filename": file.filename,
-      "file_size": len(contents),
-      "content_type": file.content_type
-   }
+   finally:
+      os.unlink(temp_file)
+
+   detection_responses = []
+
+   for detection_data in result["detections"]:
+      class_name = detection_data["class"]
+      confidence = detection_data["confidence"]
+      bounding_box = detection_data["bounding_box"]
+
+      detection_response = DetectionResponse(
+         class_name=class_name,
+         confidence=confidence,
+         bounding_box=bounding_box
+      )
+
+      detection_responses.append(detection_response)
+
+   print(detection_responses)
+
+   prediction_response = PredictionResponse(
+      prediction_id = 1,
+      filename = file.filename,
+      status = "completed",
+      detections = detection_responses
+   )
+
+   return prediction_response
 
 
