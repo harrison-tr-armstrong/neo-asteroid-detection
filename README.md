@@ -102,9 +102,9 @@ The project is organised into phases covering research, dataset preparation, mod
 - [x] Establish the backend foundation.
 - [x] Implement image upload.
 - [x] Build the prediction API.
-- [ ] Design the database.(In progress)
-- [ ] Store detection results.
-- [ ] Retrieve stored results.
+- [x] Design the database.
+- [x] Store detection results.
+- [ ] Retrieve stored results.(in progress)
 
 ### Phase 7 — Application Development
 
